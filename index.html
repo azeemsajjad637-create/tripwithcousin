@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRIP WITH BROTHER'S</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+  h1 { text-align: center; font-size: 20px; color: #333; }
+  
+  /* Search Box Style */
+  .search-wrap { display: flex; justify-content: center; margin-bottom: 15px; gap: 8px; }
+  .search-wrap input { padding: 10px; border: 2px solid #1a5cff; border-radius: 8px; font-size: 15px; width: 200px; text-align: center; font-weight: bold; }
+  .search-wrap button { padding: 10px 15px; background: #1a5cff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  
+  .login-wrap { max-width: 360px; margin: 60px auto; background: #fff; padding: 30px 25px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+  .login-wrap h2 { text-align: center; color: #1a5cff; margin-top: 0; }
+  .login-wrap label { font-size: 13px; font-weight: 600; color: #444; }
+  .login-wrap input { width: 100%; padding: 10px; margin: 6px 0 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; }
+  .login-wrap button { width: 100%; padding: 11px; border: none; border-radius: 8px; background: #1a5cff; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 6px; }
+  .login-wrap button:hover { background: #0d3fb8; }
+  .login-wrap button.secondary { background: #fff; color: #1a5cff; border: 2px solid #1a5cff; }
+  .err { color: #d32f2f; font-size: 13px; text-align: center; min-height: 18px; margin-top: 8px; }
+  #app { display: none; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 16px; border-radius: 10px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .topbar .user { font-weight: 700; color: #1a5cff; font-size: 14px; }
+  .topbar button { padding: 7px 14px; border: none; border-radius: 7px; background: #e53935; color: #fff; font-weight: 600; cursor: pointer; }
+  
+  .top-totals { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .total-card { background: #fff; border-radius: 10px; padding: 10px 15px; box-shadow: 0 2px 8px rgba(0,0,0,.1); text-align: center; min-width: 100px; flex: 1; }
+  .total-card .tname { font-weight: 700; color: #1a5cff; font-size: 14px; }
+  .total-card .tval { font-size: 16px; font-weight: 800; color: #111; margin-top: 4px; }
+  .total-card.grand { background: #1a5cff; flex-basis: 100%; margin-top: 10px; }
+  .total-card.grand .tname { color: #cfe0ff; }
+  .total-card.grand .tval { color: #fff; font-size: 20px; }
+
+  .table-wrap { overflow-x: auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+  table { border-collapse: collapse; width: max-content; }
+  th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: center; }
+  
+  thead th { background: #1a5cff; color: #fff; font-size: 12px; position: sticky; top: 0; z-index: 2; min-width: 90px; }
+  thead th.name-head, thead th.total-head { background: #0d3fb8; min-width: 100px; position: sticky; left: 0; z-index: 3; }
+  thead th.total-head { position: sticky; right: 0; left: auto; z-index: 3; }
+  
+  /* Highlight Style */
+  .highlight-col { background-color: #fff3cd !important; border-left: 2px solid #ff9800; border-right: 2px solid #ff9800; }
+  .highlight-head { background-color: #ff9800 !important; color: #fff !important; }
+
+  td.name-cell { background: #eef3ff; font-weight: 700; color: #0d3fb8; vertical-align: middle; position: sticky; left: 0; z-index: 1; }
+  td.name-cell span { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 2px; font-size: 16px; display: inline-block; padding: 8px 0; }
+  td.total-cell { background: #fff8e1; font-weight: 800; color: #b36b00; font-size: 15px; min-width: 100px; position: sticky; right: 0; z-index: 1; }
+  
+  .entry-box { display: flex; align-items: center; gap: 4px; justify-content: center; }
+  .entry-box input { width: 60px; padding: 5px; border: 1px solid #bbb; border-radius: 6px; font-size: 14px; text-align: center; font-weight: 600; }
+  .entry-box input:disabled { background: #e8ffe8; color: #0a7a0a; border-color: #0a7a0a; }
+  
+  .tick-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #1a5cff; background: #fff; color: #1a5cff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tick-btn.done { background: #0a7a0a; border-color: #0a7a0a; color: #fff; cursor: default; }
+  
+  .confirm-btn { padding: 4px 6px; border: none; border-radius: 6px; background: #ff9800; color: #fff; font-weight: 700; cursor: pointer; font-size: 11px; }
+  .locked-tag { color: #0a7a0a; font-weight: 800; font-size: 12px; }
+  .note { text-align: center; font-size: 12px; color: #666; margin-top: 14px; }
+  .sync-badge { font-size: 11px; color: #0a7a0a; text-align: center; margin-bottom: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="login-wrap" id="loginBox">
+  <h2>🔐 Login</h2>
+  <label>Email</label>
+  <input type="email" id="loginEmail" placeholder="aap@example.com" autocomplete="email">
+  <label>Password</label>
+  <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password">
+  <button onclick="doLogin()">Login</button>
+  <button class="secondary" onclick="doSignup()">Naya Account Banayein</button>
+  <div class="err" id="loginErr"></div>
+</div>
+<div id="app">
+  <div class="topbar">
+    <div class="user">👤 <span id="whoUser"></span></div>
+    <button onclick="doLogout()">Logout</button>
+  </div>
+  <div class="sync-badge" id="syncBadge">⏳ Connecting...</div>
+  <h1>💰 Daily Ledger</h1>
+  
+  <!-- SEARCH BOX -->
+  <div class="search-wrap">
+    <input type="text" id="searchDate" placeholder="dd-mm-yyyy (e.g. 15-11-2026)">
+    <button onclick="searchDate()">Search</button>
+  </div>
+
+  <div class="top-totals" id="topTotals"></div>
+  <div class="table-wrap">
+    <table id="ledger"><thead></thead><tbody></tbody></table>
+  </div>
+  <p class="note">Amount likhein → Confirm dabayein. (Table ko left/right scroll karein)</p>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDeKEwJ_lnxpjCO9QSRc0YADodHOnxe7pw",
+  authDomain: "trip-for-islamabad.firebaseapp.com",
+  databaseURL: "https://trip-for-islamabad-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "trip-for-islamabad",
+  storageBucket: "trip-for-islamabad.firebasestorage.app",
+  messagingSenderId: "232591848952",
+  appId: "1:232591848952:web:e25da3fa53a71e5bb1120d",
+  measurementId: "G-2YWXGSV3W1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const NAMES = ["Azeem", "Abdullah", "Kaleem", "Mursal", "Adeem"];
+const DB_PATH = "ledger/data";
+
+// ==========================================
+// DAY-BY-DAY DATES GENERATOR
+const START_DATE = new Date("2026-10-26");
+const END_DATE = new Date("2027-09-30");
+
+let DATES = [];
+let current = new Date(START_DATE);
+
+while (current <= END_DATE) {
+  let d = String(current.getDate()).padStart(2, '0');
+  let m = String(current.getMonth() + 1).padStart(2, '0');
+  let y = current.getFullYear();
+  DATES.push(`${d}-${m}-${y}`);
+  current.setDate(current.getDate() + 1);
+}
+// ==========================================
+
+let data = {};
+let currentUser = null;
+
+window.doLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    err.textContent = '';
+  } catch (e) {
+    err.textContent = '❌ Galat email ya password';
+  }
+};
+
+window.doSignup = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  if (pass.length < 6) { err.textContent = 'Password kam az kam 6 characters ka ho'; return; }
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    err.textContent = '';
+  } catch (e) {
+    err.textContent = '❌ ' + e.message;
+  }
+};
+
+window.doLogout = function() { signOut(auth); };
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('whoUser').textContent = user.email;
+    startListening();
+  } else {
+    currentUser = null;
+    document.getElementById('loginBox').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+let unsubscribe = null;
+function startListening() {
+  const dataRef = ref(db, DB_PATH);
+  if(unsubscribe) unsubscribe();
+  
+  unsubscribe = onValue(dataRef, (snapshot) => {
+    const val = snapshot.val();
+    if (val) {
+      data = val;
+    } else {
+      data = {};
+      NAMES.forEach(n => {
+        data[n] = {};
+        DATES.forEach(d => data[n][d] = { amount: 0, confirmed: false, ticked: false });
+      });
+      set(dataRef, data);
+    }
+    
+    NAMES.forEach(n => {
+      if (!data[n]) data[n] = {};
+      DATES.forEach(d => {
+        if (!data[n][d]) data[n][d] = { amount: 0, confirmed: false, ticked: false };
+      });
+    });
+    
+    document.getElementById('syncBadge').textContent = '🟢 Live — Data connected';
+    buildAll();
+  }, (error) => {
+    document.getElementById('syncBadge').textContent = '🔴 Error: ' + error.message;
+  });
+}
+
+function saveToFirebase() {
+  if (!currentUser) return;
+  set(ref(db, DB_PATH), data).catch(e => alert('Save error: ' + e.message));
+}
+
+const thead = document.querySelector('#ledger thead');
+const tbody = document.querySelector('#ledger tbody');
+
+function buildAll() {
+  buildHead();
+  buildBody();
+  recalcTotals();
+}
+
+function buildHead() {
+  const tr = document.createElement('tr');
+  const thName = document.createElement('th');
+  thName.className = 'name-head'; thName.textContent = 'Name';
+  tr.appendChild(thName);
+  
+  DATES.forEach((d, index) => {
+    const th = document.createElement('th');
+    th.textContent = d;
+    th.id = 'th-date-' + index; // ID lagayi taake search ho sake
+    tr.appendChild(th);
+  });
+  
+  const thTotal = document.createElement('th');
+  thTotal.className = 'total-head'; thTotal.textContent = 'Total';
+  tr.appendChild(thTotal);
+  thead.innerHTML = ''; thead.appendChild(tr);
+}
+
+function buildBody() {
+  tbody.innerHTML = '';
+  NAMES.forEach(name => {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    tdName.className = 'name-cell';
+    tdName.innerHTML = `<span>${name}</span>`;
+    tr.appendChild(tdName);
+
+    DATES.forEach((date, index) => {
+      const td = document.createElement('td');
+      td.id = `td-${name}-${index}`; // Har box ko ID di taake highlight ho sake
+      td.appendChild(makeEntryBox(name, date));
+      tr.appendChild(td);
+    });
+
+    const tdTotal = document.createElement('td');
+    tdTotal.className = 'total-cell';
+    tdTotal.id = 'total-' + name;
+    tdTotal.textContent = '0';
+    tr.appendChild(tdTotal);
+    tbody.appendChild(tr);
+  });
+}
+
+// ==========================================
+// SEARCH FUNCTION
+window.searchDate = function() {
+  const searchInput = document.getElementById('searchDate').value.trim();
+  
+  // Pehle purana highlight hatao
+  document.querySelectorAll('.highlight-col').forEach(el => el.classList.remove('highlight-col'));
+  document.querySelectorAll('.highlight-head').forEach(el => el.classList.remove('highlight-head'));
+
+  if(!searchInput) return;
+
+  const index = DATES.indexOf(searchInput);
+  
+  if (index === -1) {
+    alert('Yeh date nahi mili. Format check karein (dd-mm-yyyy)');
+    return;
+  }
+
+  // Naya highlight lagao
+  document.getElementById('th-date-' + index).classList.add('highlight-head');
+  
+  NAMES.forEach(name => {
+    document.getElementById(`td-${name}-${index}`).classList.add('highlight-col');
+  });
+
+  // Table ko us date par scroll karwao
+  const targetTh = document.getElementById('th-date-' + index);
+  targetTh.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+};
+// ==========================================
+
+function makeEntryBox(name, date) {
+  const st = data[name][date];
+  const wrap = document.createElement('div');
+  wrap.className = 'entry-box';
+
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.placeholder = '0'; inp.min = '0';
+  inp.value = st.amount > 0 ? st.amount : '';
+  inp.disabled = st.confirmed;
+  inp.addEventListener('change', () => {
+    st.amount = parseFloat(inp.value) || 0;
+    saveToFirebase();
+    recalcTotals();
+  });
+
+  const tick = document.createElement('button');
+  tick.className = 'tick-btn' + (st.ticked ? ' done' : '');
+  tick.textContent = st.ticked ? '✓' : '';
+  if (st.ticked) tick.disabled = true;
+  tick.addEventListener('click', () => {
+    if (st.ticked) return;
+    st.ticked = true;
+    saveToFirebase();
+    tick.textContent = '✓'; tick.classList.add('done'); tick.disabled = true;
+  });
+
+  if (!st.confirmed) {
+    const btn = document.createElement('button');
+    btn.className = 'confirm-btn'; btn.textContent = 'C';
+    btn.addEventListener('click', () => {
+      const val = parseFloat(inp.value) || 0;
+      if (val <= 0) { alert('Pehle paisay likhein!'); return; }
+      st.amount = val; st.confirmed = true;
+      saveToFirebase();
+      inp.disabled = true; inp.value = val;
+      btn.remove();
+      const tag = document.createElement('span');
+      tag.className = 'locked-tag'; tag.textContent = '🔒';
+      wrap.appendChild(tag);
+      recalcTotals();
+    });
+    wrap.append(inp, tick, btn);
+  } else {
+    const tag = document.createElement('span');
+    tag.className = 'locked-tag'; tag.textContent = '🔒';
+    wrap.append(inp, tick, tag);
+  }
+  return wrap;
+}
+
+function calcPersonTotal(name) {
+  return DATES.reduce((s, d) => s + (data[name][d].amount || 0), 0);
+}
+
+function recalcTotals() {
+  NAMES.forEach(n => {
+    const el = document.getElementById('total-' + n);
+    if (el) el.textContent = calcPersonTotal(n).toLocaleString();
+  });
+  renderTopTotals();
+}
+
+function renderTopTotals() {
+  const box = document.getElementById('topTotals');
+  box.innerHTML = '';
+  
+  NAMES.forEach(name => {
+    const c = document.createElement('div');
+    c.className = 'total-card';
+    c.innerHTML = `<div class="tname">${name}</div><div class="tval">${calcPersonTotal(name).toLocaleString()}</div>`;
+    box.appendChild(c);
+  });
+  
+  const grand = NAMES.reduce((s, n) => s + calcPersonTotal(n), 0);
+  const g = document.createElement('div');
+  g.className = 'total-card grand';
+  g.innerHTML = `<div class="tname">GRAND TOTAL</div><div class="tval">${grand.toLocaleString()}</div>`;
+  box.appendChild(g);
+}
+</script>
+</body>
+</html>
